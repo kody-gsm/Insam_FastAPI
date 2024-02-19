@@ -107,6 +107,7 @@ class ConnectionManager:
                     print(f"Exception type: {type(e)}")
 
 
+
 manager = ConnectionManager()
 
 
@@ -122,6 +123,10 @@ async def get():
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id)
+
+    print(websocket.scope)
+
+
     try:
         while True:
             data = await websocket.receive_json()
