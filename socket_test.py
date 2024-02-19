@@ -8,7 +8,7 @@ import time
 
 USER_NAME = '1112345678999'
 
-BACKEND_URL = '192.168.1.5:8000'
+BACKEND_URL = '116.124.89.131:8000'
 LOCAL_URL = '127.0.0.1:8000'
 
 async def handle_input():
@@ -17,7 +17,7 @@ async def handle_input():
 
 async def ws_send(ws):
     while True:
-        message = {'message' : "Hello, WebSocket", 'type': "test"}
+        message = {'type': "test", 'message' : "Hello, WebSocket"}
         await ws.send(json.dumps(message))
         await asyncio.sleep(0.2)
         # while True:
@@ -38,17 +38,17 @@ async def ws_recv(ws):
 
 
 async def main():
-    url = f"ws://{BACKEND_URL}/ws/{USER_NAME}"
+    url = f"ws://{LOCAL_URL}/ws/{USER_NAME}"
     print(url)
     try:
-        async with websockets.connect(url, ping_interval=60) as websocket:
+        async with websockets.connect(url, ping_interval=60, extra_headers={"client_id": "code"}) as websocket:
 
             asyncio.create_task(ws_send(websocket))
 
             while True:
-                task = asyncio.create_task(ws_recv(websocket))
+                recv_task = asyncio.create_task(ws_recv(websocket))
 
-                await task
+                await recv_task
 
     except ConnectionClosedError as e:
         print(f"WebSocket connection closed unexpectedly: {e}")

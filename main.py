@@ -11,6 +11,8 @@ import base64
 import cv2
 import numpy as np
 
+
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -120,11 +122,16 @@ async def get():
     return HTMLResponse(html)
 
 
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    await manager.connect(websocket, client_id)
+@app.websocket("/ws/{test_id}")
+async def websocket_endpoint(websocket: WebSocket, test_id: str):
+    await manager.connect(websocket, test_id)
 
-    print(websocket.scope)
+    print(websocket.headers)
+
+    # if "client_id" not in websocket.headers:
+    #     await manager.disconnect(websocket)
+
+
 
 
     try:
@@ -139,7 +146,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                 image = base64.b64decode(image_str)
                 frame = cv2.imdecode(np.frombuffer(image, np.uint8), 1)
 
-            await manager.broadcast(data)
+            if "client_id" not in websocket.headers:
+                await manager.broadcast(data)
+            else:
+                for user in manager.active_connections:
+                    if "client_id" in user.headers:
+                        if user.headers["client_id"] == "dksl":
+                            await manager.send_personal_message(data, user)
 
 
     except WebSocketDisconnect:
